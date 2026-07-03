@@ -25,7 +25,6 @@
             position: relative;
         }
 
-        /* Logo */
         .logo {
             position: fixed;
             top: 24px;
@@ -42,7 +41,6 @@
             display: block;
         }
 
-        /* Container */
         .container {
             width: 100%;
             max-width: 560px;
@@ -88,7 +86,6 @@
             text-transform: uppercase;
         }
 
-        /* Form */
         .form-group {
             margin-bottom: 18px;
         }
@@ -128,15 +125,6 @@
         .form-group select option {
             background: #0a0e1a;
             color: #e8edf5;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
         }
 
         .chunk-input {
@@ -345,7 +333,6 @@
             letter-spacing: 1px;
         }
 
-        /* Responsive */
         @media (max-width: 480px) {
             .logo {
                 top: 16px;
@@ -360,11 +347,6 @@
 
             .header .origin {
                 font-size: 0.5rem;
-            }
-
-            .form-row {
-                flex-direction: column;
-                gap: 0;
             }
 
             .folder-select {
@@ -388,14 +370,11 @@
 </head>
 <body>
 
-    <!-- Logo -->
     <div class="logo">
         <img src="/cc.png" alt="-O- logo" width="48" height="48">
     </div>
 
-    <!-- Main -->
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <div class="header-left">
                 <a href="/" class="back">←</a>
@@ -405,7 +384,6 @@
             <span style="font-size:0.7rem;color:#4a5a7a;">downloader</span>
         </div>
 
-        <!-- Folder Selection -->
         <div class="form-group">
             <label>Download Folder</label>
             <div class="folder-select">
@@ -418,13 +396,11 @@
             <div class="file-list" id="fileList" style="display:none;"></div>
         </div>
 
-        <!-- URL Input -->
         <div class="form-group">
             <label>File URL</label>
             <input type="url" id="fileUrl" placeholder="https://example.com/file.gguf">
         </div>
 
-        <!-- Chunk Size -->
         <div class="form-group">
             <label>Chunk Size</label>
             <div class="chunk-input">
@@ -433,13 +409,11 @@
             </div>
         </div>
 
-        <!-- Status -->
         <div class="status-box">
             <span class="status-text" id="statusText">Ready <span class="highlight">·</span> select a folder to begin</span>
             <span class="progress" id="progressText"></span>
         </div>
 
-        <!-- Buttons -->
         <div class="btn-group">
             <button class="btn" id="downloadBtn" disabled>⬇ Download</button>
             <button class="btn danger" id="pauseBtn" disabled>⏸ Pause</button>
@@ -477,7 +451,6 @@
             let isPaused = false;
             let currentDownload = null;
 
-            // --- Folder Selection (File System Access API) ---
             selectFolderBtn.addEventListener('click', async function() {
                 try {
                     if (!window.showDirectoryPicker) {
@@ -489,7 +462,6 @@
                     selectedFolder = dirHandle;
                     folderPath.value = dirHandle.name;
 
-                    // Check if folder has existing files
                     const entries = [];
                     for await (const entry of dirHandle.values()) {
                         entries.push(entry);
@@ -530,7 +502,6 @@
                 }
             });
 
-            // --- Download Logic ---
             downloadBtn.addEventListener('click', async function() {
                 if (!selectedFolder) {
                     statusText.innerHTML = '⚠️ Please select a folder first.';
@@ -549,7 +520,6 @@
                     return;
                 }
 
-                // Confirm folder clearing
                 const entries = [];
                 for await (const entry of selectedFolder.values()) {
                     entries.push(entry);
@@ -563,13 +533,11 @@
                     if (!confirmClear) return;
                 }
 
-                // Clear folder
                 for await (const entry of selectedFolder.values()) {
                     try {
                         if (entry.kind === 'file') {
                             await selectedFolder.removeEntry(entry.name);
                         } else {
-                            // Recursive delete for folders
                             await selectedFolder.removeEntry(entry.name, { recursive: true });
                         }
                     } catch (e) {
@@ -612,6 +580,8 @@
                     throw new Error('Server did not provide Content-Length. Cannot chunk download.');
                 }
 
+                const originalFilename = url.split('/').pop() || 'output.bin';
+
                 const totalSize = contentLength;
                 const chunkSizeBytes = chunkSizeMB * 1024 * 1024;
                 const totalChunks = Math.ceil(totalSize / chunkSizeBytes);
@@ -620,9 +590,9 @@
                 let chunkIndex = 0;
                 let buffer = [];
 
-                // Create fileindex.json
                 const index = {
                     url: url,
+                    originalFilename: originalFilename,
                     totalSize: totalSize,
                     chunkSize: chunkSizeBytes,
                     totalChunks: totalChunks,
@@ -639,7 +609,6 @@
                     });
                 }
 
-                // Save index
                 const indexFile = await selectedFolder.getFileHandle('fileindex.json', { create: true });
                 const indexWriter = await indexFile.createWritable();
                 await indexWriter.write(JSON.stringify(index, null, 2));
@@ -679,14 +648,12 @@
                             }
                         }
 
-                        // Save chunk
                         const filename = 'chunk_' + String(chunkIndex).padStart(6, '0') + '.part';
                         const fileHandle = await selectedFolder.getFileHandle(filename, { create: true });
                         const writer = await fileHandle.createWritable();
                         await writer.write(chunkData);
                         await writer.close();
 
-                        // Update index
                         index.chunks[chunkIndex].downloaded = true;
                         const indexFile2 = await selectedFolder.getFileHandle('fileindex.json', { create: true });
                         const indexWriter2 = await indexFile2.createWritable();
@@ -704,7 +671,6 @@
                     }
                 }
 
-                // Mark complete
                 index.completed = true;
                 const indexFile3 = await selectedFolder.getFileHandle('fileindex.json', { create: true });
                 const indexWriter3 = await indexFile3.createWritable();
@@ -712,6 +678,7 @@
                 await indexWriter3.close();
 
                 statusText.innerHTML = '✅ Download complete! <span class="highlight">' + totalChunks + '</span> chunks saved.';
+                statusText.innerHTML += ' Use the <span class="highlight">Compiler</span> to reassemble into <span class="highlight">' + originalFilename + '</span>';
                 progressText.textContent = '100%';
                 downloadBtn.disabled = false;
                 pauseBtn.disabled = true;
@@ -731,7 +698,6 @@
                 });
             }
 
-            // --- Pause ---
             pauseBtn.addEventListener('click', function() {
                 if (isDownloading && !isPaused) {
                     isPaused = true;
@@ -741,7 +707,6 @@
                 }
             });
 
-            // --- Resume ---
             resumeBtn.addEventListener('click', function() {
                 if (isDownloading && isPaused) {
                     isPaused = false;
@@ -751,7 +716,6 @@
                 }
             });
 
-            // --- Cancel ---
             cancelBtn.addEventListener('click', function() {
                 if (isDownloading) {
                     isPaused = true;
@@ -765,12 +729,10 @@
                 }
             });
 
-            // --- Init ---
             pauseBtn.disabled = true;
             resumeBtn.disabled = true;
             cancelBtn.disabled = true;
 
-            // Check for File System Access API support
             if (!window.showDirectoryPicker) {
                 statusText.innerHTML = '⚠️ Your browser does not support the File System Access API. Please use Chrome or Edge.';
                 selectFolderBtn.disabled = true;
