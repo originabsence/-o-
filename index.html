@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>-O-</title>
+    <link href="https://fonts.bunny.net/css?family=lexend:300,400,600,700" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lexend', 'Segoe UI', Arial, sans-serif;
+            background: #0a0e1a;
+            color: #e8edf5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Logo */
+        .logo {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Main Container */
+        .container {
+            width: 100%;
+            max-width: 640px;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 300;
+            font-size: 4rem;
+            letter-spacing: 8px;
+            color: #e8edf5;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #4a5a7a;
+            font-size: 0.85rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+        }
+
+        .tagline {
+            color: #6a7a9a;
+            font-size: 0.9rem;
+            font-weight: 300;
+            margin-bottom: 48px;
+            line-height: 1.6;
+        }
+
+        .cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #131b2e;
+            border: 1px solid #1e2a44;
+            border-radius: 16px;
+            padding: 24px 28px;
+            text-decoration: none;
+            color: #e8edf5;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            touch-action: manipulation;
+        }
+
+        .card:hover {
+            border-color: #6b9fff;
+            transform: translateY(-2px);
+            background: #1a2642;
+        }
+
+        .card:active {
+            transform: scale(0.97);
+        }
+
+        .card-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e8edf5;
+        }
+
+        .card-desc {
+            font-size: 0.75rem;
+            color: #4a5a7a;
+            font-weight: 300;
+        }
+
+        .card-arrow {
+            font-size: 1.5rem;
+            color: #4a5a7a;
+            transition: color 0.2s;
+        }
+
+        .card:hover .card-arrow {
+            color: #6b9fff;
+        }
+
+        .card.downloader .card-title {
+            color: #6b9fff;
+        }
+
+        .card.compiler .card-title {
+            color: #4ade80;
+        }
+
+        .footer {
+            margin-top: 48px;
+            font-size: 0.65rem;
+            color: #2a3a4a;
+            letter-spacing: 1px;
+        }
+
+        .footer a {
+            color: #3a4a5a;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #6b9fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .logo {
+                top: 16px;
+                left: 16px;
+                width: 36px;
+                height: 36px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+                letter-spacing: 6px;
+            }
+
+            .cards {
+                max-width: 100%;
+            }
+
+            .card {
+                padding: 18px 20px;
+            }
+
+            .card-title {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo -->
+    <div class="logo">
+        <img src="/cc.png" alt="-O- logo" width="48" height="48">
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>-O-</h1>
+        <div class="subtitle">resumable downloader</div>
+        <div class="tagline">
+            split large files into chunks<br>
+            resume anytime, anywhere
+        </div>
+
+        <div class="cards">
+            <a href="/downloader.html" class="card downloader">
+                <div class="card-left">
+                    <span class="card-title">⬇ Downloader</span>
+                    <span class="card-desc">split & resume downloads</span>
+                </div>
+                <span class="card-arrow">→</span>
+            </a>
+
+            <a href="/compile.html" class="card compiler">
+                <div class="card-left">
+                    <span class="card-title">⬆ Compiler</span>
+                    <span class="card-desc">reassemble downloaded files</span>
+                </div>
+                <span class="card-arrow">→</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <a href="#">-O-</a> · open source · Origin
+        </div>
+    </div>
+
+</body>
+</html>
