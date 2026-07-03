@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>-O- · Compiler</title>
+    <link href="https://fonts.bunny.net/css?family=lexend:300,400,600,700" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lexend', 'Segoe UI', Arial, sans-serif;
+            background: #0a0e1a;
+            color: #e8edf5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .logo {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #1a2642;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 {
+            font-weight: 300;
+            font-size: 1.4rem;
+            letter-spacing: 4px;
+            color: #4ade80;
+        }
+
+        .header .back {
+            color: #4a5a7a;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.2s;
+        }
+
+        .header .back:hover {
+            color: #4ade80;
+        }
+
+        .header .origin {
+            font-size: 0.6rem;
+            color: #2a3a4a;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #6a7a9a;
+            margin-bottom: 6px;
+            font-weight: 400;
+        }
+
+        .folder-select {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .folder-select input {
+            flex: 1;
+            font-family: 'Lexend', sans-serif;
+            background: #0a0e1a;
+            border: 1px solid #1e2a44;
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #e8edf5;
+            font-size: 0.85rem;
+            outline: none;
+            min-height: 44px;
+        }
+
+        .folder-select input:focus {
+            border-color: #4ade80;
+        }
+
+        .folder-select .btn-small {
+            font-family: 'Lexend', sans-serif;
+            background: #1a2642;
+            color: #e8edf5;
+            border: 1px solid #1e2a44;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+            min-height: 44px;
+        }
+
+        .folder-select .btn-small:hover {
+            background: #2a3a5a;
+            border-color: #4ade80;
+        }
+
+        .status-box {
+            background: #0d1526;
+            border: 1px solid #1a2642;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 16px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .status-box .status-text {
+            font-size: 0.8rem;
+            color: #4a5a7a;
+            font-weight: 300;
+        }
+
+        .status-box .status-text .highlight {
+            color: #4ade80;
+            font-weight: 400;
+        }
+
+        .status-box .progress {
+            font-size: 0.7rem;
+            color: #4a5a7a;
+            font-weight: 300;
+        }
+
+        .btn {
+            width: 100%;
+            font-family: 'Lexend', sans-serif;
+            background: #4ade80;
+            color: #0a0e1a;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            touch-action: manipulation;
+            min-height: 48px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #22c55e;
+            transform: scale(0.98);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn.danger {
+            background: transparent;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .btn.danger:hover:not(:disabled) {
+            background: #ff6b6b;
+            color: #0a0e1a;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        .file-info {
+            background: #0d1526;
+            border: 1px solid #1a2642;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 12px 0;
+            display: none;
+        }
+
+        .file-info .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.8rem;
+            color: #4a5a7a;
+            border-bottom: 1px solid #0d1526;
+        }
+
+        .file-info .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .file-info .info-row .label {
+            color: #6a7a9a;
+        }
+
+        .file-info .info-row .value {
+            color: #e8edf5;
+            font-weight: 400;
+        }
+
+        .file-info .info-row .value.green {
+            color: #4ade80;
+        }
+
+        .file-info .info-row .value.orange {
+            color: #fbbf24;
+        }
+
+        .file-info .info-row .value.red {
+            color: #ff6b6b;
+        }
+
+        .file-list {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            color: #4a5a7a;
+            font-family: 'Courier New', monospace;
+            background: #0a0e1a;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            border: 1px solid #0d1526;
+            display: none;
+        }
+
+        .file-list .file-item {
+            padding: 2px 0;
+            border-bottom: 1px solid #0d1526;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .file-list .file-item .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .file-list .file-item .status-dot.done {
+            background: #4ade80;
+        }
+
+        .file-list .file-item .status-dot.missing {
+            background: #ff6b6b;
+        }
+
+        .file-list::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .file-list::-webkit-scrollbar-thumb {
+            background: #1a2642;
+            border-radius: 3px;
+        }
+
+        .footer {
+            margin-top: 32px;
+            font-size: 0.6rem;
+            color: #1a2a3a;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                top: 16px;
+                left: 16px;
+                width: 36px;
+                height: 36px;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .header .origin {
+                font-size: 0.5rem;
+            }
+
+            .folder-select {
+                flex-direction: column;
+            }
+
+            .folder-select .btn-small {
+                width: 100%;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo">
+        <img src="/cc.png" alt="-O- logo" width="48" height="48">
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <a href="/" class="back">←</a>
+                <h1>-O-</h1>
+                <span class="origin">ORIGIN</span>
+            </div>
+            <span style="font-size:0.7rem;color:#4a5a7a;">compiler</span>
+        </div>
+
+        <div class="form-group">
+            <label>Download Folder</label>
+            <div class="folder-select">
+                <input type="text" id="folderPath" placeholder="Select a folder with fileindex.json..." readonly>
+                <button class="btn-small" id="selectFolderBtn">Choose Folder</button>
+            </div>
+        </div>
+
+        <div id="fileInfo" class="file-info">
+            <div class="info-row">
+                <span class="label">File</span>
+                <span class="value" id="infoFileName">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Total Size</span>
+                <span class="value" id="infoTotalSize">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Chunks</span>
+                <span class="value" id="infoChunks">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Status</span>
+                <span class="value" id="infoStatus">-</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Output File</span>
+                <span class="value green" id="infoOutput">-</span>
+            </div>
+        </div>
+
+        <div id="fileList" class="file-list"></div>
+
+        <div class="status-box">
+            <span class="status-text" id="statusText">Ready <span class="highlight">·</span> select a folder to begin</span>
+            <span class="progress" id="progressText"></span>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn" id="compileBtn" disabled>⬆ Compile</button>
+            <button class="btn danger" id="verifyBtn" disabled>🔍 Verify</button>
+        </div>
+
+        <div class="footer">
+            -O- · Origin · resumable downloads
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const folderPath = document.getElementById('folderPath');
+            const selectFolderBtn = document.getElementById('selectFolderBtn');
+            const statusText = document.getElementById('statusText');
+            const progressText = document.getElementById('progressText');
+            const compileBtn = document.getElementById('compileBtn');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileList = document.getElementById('fileList');
+
+            const infoFileName = document.getElementById('infoFileName');
+            const infoTotalSize = document.getElementById('infoTotalSize');
+            const infoChunks = document.getElementById('infoChunks');
+            const infoStatus = document.getElementById('infoStatus');
+            const infoOutput = document.getElementById('infoOutput');
+
+            let selectedFolder = null;
+            let indexData = null;
+            let isCompiling = false;
+
+            // --- Folder Selection ---
+            selectFolderBtn.addEventListener('click', async function() {
+                try {
+                    if (!window.showDirectoryPicker) {
+                        statusText.innerHTML = '⚠️ Your browser does not support folder selection.';
+                        return;
+                    }
+
+                    const dirHandle = await window.showDirectoryPicker();
+                    selectedFolder = dirHandle;
+                    folderPath.value = dirHandle.name;
+
+                    // Check for fileindex.json
+                    try {
+                        const indexFile = await selectedFolder.getFileHandle('fileindex.json');
+                        const file = await indexFile.getFile();
+                        const text = await file.text();
+                        indexData = JSON.parse(text);
+
+                        // Show file info
+                        fileInfo.style.display = 'block';
+                        const totalSizeMB = (indexData.totalSize / 1024 / 1024).toFixed(2);
+                        const totalSizeGB = (indexData.totalSize / 1024 / 1024 / 1024).toFixed(2);
+                        const sizeDisplay = indexData.totalSize > 1024 * 1024 * 1024 ?
+                            totalSizeGB + ' GB' :
+                            totalSizeMB + ' MB';
+
+                        infoFileName.textContent = indexData.url.split('/').pop() || 'unknown';
+                        infoTotalSize.textContent = sizeDisplay;
+                        infoChunks.textContent = indexData.totalChunks + ' chunks (' +
+                            (indexData.chunks.filter(c => c.downloaded).length) + ' downloaded)';
+
+                        const allDownloaded = indexData.chunks.every(c => c.downloaded);
+                        if (allDownloaded) {
+                            infoStatus.textContent = '✅ Complete';
+                            infoStatus.style.color = '#4ade80';
+                        } else {
+                            const missing = indexData.chunks.filter(c => !c.downloaded).length;
+                            infoStatus.textContent = '⚠️ ' + missing + ' chunks missing';
+                            infoStatus.style.color = '#fbbf24';
+                        }
+
+                        infoOutput.textContent = indexData.url.split('/').pop() + '.compiled';
+
+                        // Show chunk list
+                        fileList.style.display = 'block';
+                        let html = '';
+                        for (let i = 0; i < indexData.chunks.length; i++) {
+                            const chunk = indexData.chunks[i];
+                            const status = chunk.downloaded ? 'done' : 'missing';
+                            const sizeMB = (chunk.size / 1024 / 1024).toFixed(2);
+                            html += `<div class="file-item">
+                                <span><span class="status-dot ${status}"></span>${chunk.filename}</span>
+                                <span>${sizeMB} MB</span>
+                            </div>`;
+                        }
+                        fileList.innerHTML = html;
+
+                        statusText.innerHTML = '✅ Loaded <span class="highlight">' + indexData.totalChunks +
+                            '</span> chunks from ' + selectedFolder.name;
+                        compileBtn.disabled = false;
+                        verifyBtn.disabled = false;
+
+                    } catch (e) {
+                        statusText.innerHTML = '⚠️ No valid <span class="highlight">fileindex.json</span> found in this folder.';
+                        fileInfo.style.display = 'none';
+                        fileList.style.display = 'none';
+                        compileBtn.disabled = true;
+                        verifyBtn.disabled = true;
+                        indexData = null;
+                    }
+
+                } catch (err) {
+                    if (err.name !== 'AbortError' && err.name !== 'SecurityError') {
+                        statusText.innerHTML = '❌ Error selecting folder: ' + err.message;
+                    }
+                }
+            });
+
+            // --- Verify ---
+            verifyBtn.addEventListener('click', async function() {
+                if (!selectedFolder || !indexData) {
+                    statusText.innerHTML = '⚠️ Please select a folder with fileindex.json first.';
+                    return;
+                }
+
+                verifyBtn.disabled = true;
+                statusText.innerHTML = '🔍 Verifying chunks...';
+                progressText.textContent = '0%';
+
+                let missing = 0;
+                let verified = 0;
+                const total = indexData.chunks.length;
+
+                for (let i = 0; i < total; i++) {
+                    const chunk = indexData.chunks[i];
+                    try {
+                        const fileHandle = await selectedFolder.getFileHandle(chunk.filename);
+                        const file = await fileHandle.getFile();
+                        if (file.size === chunk.size) {
+                            verified++;
+                        } else {
+                            missing++;
+                            chunk.downloaded = false;
+                        }
+                    } catch (e) {
+                        missing++;
+                        chunk.downloaded = false;
+                    }
+                    const percent = Math.round(((i + 1) / total) * 100);
+                    progressText.textContent = percent + '%';
+                }
+
+                // Update index with verification results
+                indexData.chunks.forEach(c => {
+                    if (!c.downloaded) {
+                        // It might have been marked missing above
+                    }
+                });
+
+                // Re-save index
+                try {
+                    const indexFile = await selectedFolder.getFileHandle('fileindex.json', { create: true });
+                    const writer = await indexFile.createWritable();
+                    await writer.write(JSON.stringify(indexData, null, 2));
+                    await writer.close();
+                } catch (e) {
+                    console.warn('Could not update index:', e);
+                }
+
+                progressText.textContent = '';
+                if (missing === 0) {
+                    statusText.innerHTML = '✅ All <span class="highlight">' + total + '</span> chunks verified!';
+                } else {
+                    statusText.innerHTML = '⚠️ <span class="highlight">' + missing + '</span> chunks missing or corrupt.';
+                }
+
+                // Update display
+                infoChunks.textContent = indexData.totalChunks + ' chunks (' + (indexData.chunks.filter(c => c.downloaded)
+                    .length) + ' verified)';
+                const allDownloaded = indexData.chunks.every(c => c.downloaded);
+                if (allDownloaded) {
+                    infoStatus.textContent = '✅ Complete';
+                    infoStatus.style.color = '#4ade80';
+                } else {
+                    infoStatus.textContent = '⚠️ ' + missing + ' chunks missing';
+                    infoStatus.style.color = '#fbbf24';
+                }
+
+                verifyBtn.disabled = false;
+            });
+
+            // --- Compile ---
+            compileBtn.addEventListener('click', async function() {
+                if (!selectedFolder || !indexData) {
+                    statusText.innerHTML = '⚠️ Please select a folder with fileindex.json first.';
+                    return;
+                }
+
+                if (isCompiling) return;
+
+                // Check all chunks are downloaded
+                const missing = indexData.chunks.filter(c => !c.downloaded);
+                if (missing.length > 0) {
+                    statusText.innerHTML = '⚠️ Cannot compile: <span class="highlight">' + missing.length +
+                        '</span> chunks missing. Run Verify first.';
+                    return;
+                }
+
+                const outputFilename = indexData.url.split('/').pop() || 'output.bin';
+
+                // Check if output already exists
+                try {
+                    await selectedFolder.getFileHandle(outputFilename);
+                    const overwrite = confirm(
+                        '⚠️ "' + outputFilename + '" already exists. Overwrite?'
+                    );
+                    if (!overwrite) return;
+                } catch (e) {
+                    // File doesn't exist, safe to continue
+                }
+
+                isCompiling = true;
+                compileBtn.disabled = true;
+                verifyBtn.disabled = true;
+                statusText.innerHTML = '⬆ Compiling <span class="highlight">' + indexData.totalChunks + '</span> chunks...';
+                progressText.textContent = '0%';
+
+                try {
+                    const outputFile = await selectedFolder.getFileHandle(outputFilename, { create: true });
+                    const writer = await outputFile.createWritable();
+
+                    let compiled = 0;
+                    const total = indexData.chunks.length;
+
+                    for (let i = 0; i < total; i++) {
+                        const chunk = indexData.chunks[i];
+                        const chunkFile = await selectedFolder.getFileHandle(chunk.filename);
+                        const file = await chunkFile.getFile();
+                        const buffer = await file.arrayBuffer();
+
+                        await writer.write(new Uint8Array(buffer));
+
+                        compiled++;
+                        const percent = Math.round((compiled / total) * 100);
+                        progressText.textContent = percent + '%';
+                        statusText.innerHTML = '⬆ Compiled <span class="highlight">' + compiled + '/' + total +
+                            '</span> chunks · ' + percent + '%';
+                    }
+
+                    await writer.close();
+
+                    statusText.innerHTML = 'Compilation complete! <span class="highlight">' + outputFilename +
+                        '</span> ready.';
+                    progressText.textContent = '100%';
+
+                    infoOutput.textContent = outputFilename + ' ✅';
+
+                } catch (err) {
+                    statusText.innerHTML = 'Error compiling: ' + err.message;
+                } finally {
+                    isCompiling = false;
+                    compileBtn.disabled = false;
+                    verifyBtn.disabled = false;
+                }
+            });
+
+            // --- Init ---
+            compileBtn.disabled = true;
+            verifyBtn.disabled = true;
+
+            if (!window.showDirectoryPicker) {
+                statusText.innerHTML = '⚠️ Your browser does not support the File System Access API. Please use Chrome or Edge.';
+                selectFolderBtn.disabled = true;
+            }
+
+        })();
+    </script>
+</body>
+</html>
