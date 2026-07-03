@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>-O- · Downloader</title>
+    <link href="https://fonts.bunny.net/css?family=lexend:300,400,600,700" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lexend', 'Segoe UI', Arial, sans-serif;
+            background: #0a0e1a;
+            color: #e8edf5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Logo */
+        .logo {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            width: 48px;
+            height: 48px;
+            background: transparent;
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #1a2642;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 {
+            font-weight: 300;
+            font-size: 1.4rem;
+            letter-spacing: 4px;
+            color: #6b9fff;
+        }
+
+        .header .back {
+            color: #4a5a7a;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.2s;
+        }
+
+        .header .back:hover {
+            color: #6b9fff;
+        }
+
+        .header .origin {
+            font-size: 0.6rem;
+            color: #2a3a4a;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #6a7a9a;
+            margin-bottom: 6px;
+            font-weight: 400;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            font-family: 'Lexend', sans-serif;
+            background: #0a0e1a;
+            border: 1px solid #1e2a44;
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #e8edf5;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border 0.2s;
+            min-height: 44px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #6b9fff;
+        }
+
+        .form-group input::placeholder {
+            color: #3a4a5a;
+        }
+
+        .form-group select option {
+            background: #0a0e1a;
+            color: #e8edf5;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .chunk-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chunk-input input {
+            flex: 1;
+        }
+
+        .chunk-input .unit {
+            color: #4a5a7a;
+            font-size: 0.85rem;
+            font-weight: 300;
+            min-width: 40px;
+        }
+
+        .status-box {
+            background: #0d1526;
+            border: 1px solid #1a2642;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 16px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .status-box .status-text {
+            font-size: 0.8rem;
+            color: #4a5a7a;
+            font-weight: 300;
+        }
+
+        .status-box .status-text .highlight {
+            color: #6b9fff;
+            font-weight: 400;
+        }
+
+        .status-box .progress {
+            font-size: 0.7rem;
+            color: #4a5a7a;
+            font-weight: 300;
+        }
+
+        .btn {
+            width: 100%;
+            font-family: 'Lexend', sans-serif;
+            background: #6b9fff;
+            color: #0a0e1a;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            touch-action: manipulation;
+            min-height: 48px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #5a8aee;
+            transform: scale(0.98);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn.danger {
+            background: transparent;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .btn.danger:hover:not(:disabled) {
+            background: #ff6b6b;
+            color: #0a0e1a;
+        }
+
+        .btn.success {
+            background: #4ade80;
+            color: #0a0e1a;
+        }
+
+        .btn.success:hover:not(:disabled) {
+            background: #22c55e;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        .folder-select {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .folder-select input {
+            flex: 1;
+            font-family: 'Lexend', sans-serif;
+            background: #0a0e1a;
+            border: 1px solid #1e2a44;
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #e8edf5;
+            font-size: 0.85rem;
+            outline: none;
+            min-height: 44px;
+        }
+
+        .folder-select input:focus {
+            border-color: #6b9fff;
+        }
+
+        .folder-select .btn-small {
+            font-family: 'Lexend', sans-serif;
+            background: #1a2642;
+            color: #e8edf5;
+            border: 1px solid #1e2a44;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+            min-height: 44px;
+        }
+
+        .folder-select .btn-small:hover {
+            background: #2a3a5a;
+            border-color: #6b9fff;
+        }
+
+        .warning {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.75rem;
+            color: #ff6b6b;
+            margin: 8px 0;
+            display: none;
+        }
+
+        .warning.show {
+            display: block;
+        }
+
+        .file-list {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            color: #4a5a7a;
+            font-family: 'Courier New', monospace;
+            background: #0a0e1a;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            border: 1px solid #0d1526;
+        }
+
+        .file-list .file-item {
+            padding: 2px 0;
+            border-bottom: 1px solid #0d1526;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .file-list .file-item .size {
+            color: #2a3a4a;
+        }
+
+        .file-list::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .file-list::-webkit-scrollbar-thumb {
+            background: #1a2642;
+            border-radius: 3px;
+        }
+
+        .footer {
+            margin-top: 32px;
+            font-size: 0.6rem;
+            color: #1a2a3a;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .logo {
+                top: 16px;
+                left: 16px;
+                width: 36px;
+                height: 36px;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .header .origin {
+                font-size: 0.5rem;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .folder-select {
+                flex-direction: column;
+            }
+
+            .folder-select .btn-small {
+                width: 100%;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .chunk-input .unit {
+                min-width: 30px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo -->
+    <div class="logo">
+        <img src="/cc.png" alt="-O- logo" width="48" height="48">
+    </div>
+
+    <!-- Main -->
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <a href="/" class="back">←</a>
+                <h1>-O-</h1>
+                <span class="origin">ORIGIN</span>
+            </div>
+            <span style="font-size:0.7rem;color:#4a5a7a;">downloader</span>
+        </div>
+
+        <!-- Folder Selection -->
+        <div class="form-group">
+            <label>Download Folder</label>
+            <div class="folder-select">
+                <input type="text" id="folderPath" placeholder="Select a folder..." readonly>
+                <button class="btn-small" id="selectFolderBtn">Choose Folder</button>
+            </div>
+            <div class="warning" id="folderWarning">
+                ⚠️ This folder contains existing files. They will be cleared if you continue.
+            </div>
+            <div class="file-list" id="fileList" style="display:none;"></div>
+        </div>
+
+        <!-- URL Input -->
+        <div class="form-group">
+            <label>File URL</label>
+            <input type="url" id="fileUrl" placeholder="https://example.com/file.gguf">
+        </div>
+
+        <!-- Chunk Size -->
+        <div class="form-group">
+            <label>Chunk Size</label>
+            <div class="chunk-input">
+                <input type="number" id="chunkSize" value="100" min="1" max="10000">
+                <span class="unit">MB</span>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-box">
+            <span class="status-text" id="statusText">Ready <span class="highlight">·</span> select a folder to begin</span>
+            <span class="progress" id="progressText"></span>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-group">
+            <button class="btn" id="downloadBtn" disabled>⬇ Download</button>
+            <button class="btn danger" id="pauseBtn" disabled>⏸ Pause</button>
+            <button class="btn" id="resumeBtn" disabled>▶ Resume</button>
+        </div>
+
+        <div class="btn-group" style="margin-top:8px;">
+            <button class="btn danger" id="cancelBtn" disabled>✕ Cancel</button>
+        </div>
+
+        <div class="footer">
+            -O- · Origin · resumable downloads
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const folderPath = document.getElementById('folderPath');
+            const selectFolderBtn = document.getElementById('selectFolderBtn');
+            const fileUrl = document.getElementById('fileUrl');
+            const chunkSize = document.getElementById('chunkSize');
+            const statusText = document.getElementById('statusText');
+            const progressText = document.getElementById('progressText');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resumeBtn = document.getElementById('resumeBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const folderWarning = document.getElementById('folderWarning');
+            const fileList = document.getElementById('fileList');
+
+            let selectedFolder = null;
+            let isDownloading = false;
+            let isPaused = false;
+            let currentDownload = null;
+
+            // --- Folder Selection (File System Access API) ---
+            selectFolderBtn.addEventListener('click', async function() {
+                try {
+                    if (!window.showDirectoryPicker) {
+                        statusText.innerHTML = '⚠️ Your browser does not support folder selection.';
+                        return;
+                    }
+
+                    const dirHandle = await window.showDirectoryPicker();
+                    selectedFolder = dirHandle;
+                    folderPath.value = dirHandle.name;
+
+                    // Check if folder has existing files
+                    const entries = [];
+                    for await (const entry of dirHandle.values()) {
+                        entries.push(entry);
+                    }
+
+                    if (entries.length > 0) {
+                        folderWarning.classList.add('show');
+                        fileList.style.display = 'block';
+                        let html = '';
+                        let totalSize = 0;
+                        for (const entry of entries) {
+                            if (entry.kind === 'file') {
+                                const file = await entry.getFile();
+                                const size = (file.size / 1024 / 1024).toFixed(2);
+                                totalSize += file.size;
+                                html += `<div class="file-item"><span>${entry.name}</span><span class="size">${size} MB</span></div>`;
+                            } else {
+                                html += `<div class="file-item"><span>📁 ${entry.name}</span><span class="size">folder</span></div>`;
+                            }
+                        }
+                        if (html) {
+                            fileList.innerHTML = html;
+                        } else {
+                            fileList.innerHTML = '<div style="color:#3a4a5a;padding:4px 0;">(empty folder)</div>';
+                        }
+                    } else {
+                        folderWarning.classList.remove('show');
+                        fileList.style.display = 'none';
+                    }
+
+                    statusText.innerHTML = '✅ Folder selected: <span class="highlight">' + dirHandle.name + '</span>';
+                    downloadBtn.disabled = false;
+
+                } catch (err) {
+                    if (err.name !== 'AbortError' && err.name !== 'SecurityError') {
+                        statusText.innerHTML = '❌ Error selecting folder: ' + err.message;
+                    }
+                }
+            });
+
+            // --- Download Logic ---
+            downloadBtn.addEventListener('click', async function() {
+                if (!selectedFolder) {
+                    statusText.innerHTML = '⚠️ Please select a folder first.';
+                    return;
+                }
+
+                const url = fileUrl.value.trim();
+                if (!url) {
+                    statusText.innerHTML = '⚠️ Please enter a file URL.';
+                    return;
+                }
+
+                const chunkSizeMB = parseInt(chunkSize.value) || 100;
+                if (chunkSizeMB < 1) {
+                    statusText.innerHTML = '⚠️ Chunk size must be at least 1 MB.';
+                    return;
+                }
+
+                // Confirm folder clearing
+                const entries = [];
+                for await (const entry of selectedFolder.values()) {
+                    entries.push(entry);
+                }
+
+                if (entries.length > 0) {
+                    const confirmClear = confirm(
+                        '⚠️ The folder "' + selectedFolder.name + '" contains ' + entries.length +
+                        ' items. They will be deleted. Continue?'
+                    );
+                    if (!confirmClear) return;
+                }
+
+                // Clear folder
+                for await (const entry of selectedFolder.values()) {
+                    try {
+                        if (entry.kind === 'file') {
+                            await selectedFolder.removeEntry(entry.name);
+                        } else {
+                            // Recursive delete for folders
+                            await selectedFolder.removeEntry(entry.name, { recursive: true });
+                        }
+                    } catch (e) {
+                        console.warn('Could not delete:', entry.name, e);
+                    }
+                }
+
+                folderWarning.classList.remove('show');
+                fileList.style.display = 'none';
+
+                statusText.innerHTML = '⬇ Downloading... <span class="highlight">' + url + '</span>';
+                progressText.textContent = '0%';
+                downloadBtn.disabled = true;
+                pauseBtn.disabled = false;
+                cancelBtn.disabled = false;
+                isDownloading = true;
+                isPaused = false;
+
+                try {
+                    await startDownload(url, chunkSizeMB);
+                } catch (err) {
+                    statusText.innerHTML = '❌ Error: ' + err.message;
+                } finally {
+                    isDownloading = false;
+                    downloadBtn.disabled = false;
+                    pauseBtn.disabled = true;
+                    resumeBtn.disabled = true;
+                    cancelBtn.disabled = true;
+                }
+            });
+
+            async function startDownload(url, chunkSizeMB) {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                }
+
+                const contentLength = parseInt(response.headers.get('Content-Length')) || 0;
+                if (!contentLength) {
+                    throw new Error('Server did not provide Content-Length. Cannot chunk download.');
+                }
+
+                const totalSize = contentLength;
+                const chunkSizeBytes = chunkSizeMB * 1024 * 1024;
+                const totalChunks = Math.ceil(totalSize / chunkSizeBytes);
+                const reader = response.body.getReader();
+                let downloaded = 0;
+                let chunkIndex = 0;
+                let buffer = [];
+
+                // Create fileindex.json
+                const index = {
+                    url: url,
+                    totalSize: totalSize,
+                    chunkSize: chunkSizeBytes,
+                    totalChunks: totalChunks,
+                    chunks: [],
+                    completed: false
+                };
+
+                for (let i = 0; i < totalChunks; i++) {
+                    index.chunks.push({
+                        index: i,
+                        filename: 'chunk_' + String(i).padStart(6, '0') + '.part',
+                        size: Math.min(chunkSizeBytes, totalSize - (i * chunkSizeBytes)),
+                        downloaded: false
+                    });
+                }
+
+                // Save index
+                const indexFile = await selectedFolder.getFileHandle('fileindex.json', { create: true });
+                const indexWriter = await indexFile.createWritable();
+                await indexWriter.write(JSON.stringify(index, null, 2));
+                await indexWriter.close();
+
+                statusText.innerHTML = '⬇ Downloading <span class="highlight">' + totalChunks + '</span> chunks...';
+
+                while (downloaded < totalSize) {
+                    if (isPaused) {
+                        statusText.innerHTML = '⏸ Paused <span class="highlight">' + Math.round((downloaded / totalSize) * 100) + '%</span>';
+                        await waitForResume();
+                        statusText.innerHTML = '▶ Resuming <span class="highlight">' + Math.round((downloaded / totalSize) * 100) + '%</span>';
+                    }
+
+                    const result = await reader.read();
+                    if (result.done) break;
+
+                    buffer.push(result.value);
+                    let bufferSize = buffer.reduce((acc, chunk) => acc + chunk.length, 0);
+
+                    while (bufferSize >= chunkSizeBytes || (downloaded + bufferSize >= totalSize)) {
+                        const chunkData = new Uint8Array(Math.min(chunkSizeBytes, bufferSize, totalSize - downloaded));
+                        let offset = 0;
+                        let remaining = chunkData.length;
+
+                        while (remaining > 0 && buffer.length > 0) {
+                            const chunk = buffer[0];
+                            const copyLen = Math.min(remaining, chunk.length);
+                            chunkData.set(chunk.slice(0, copyLen), offset);
+                            offset += copyLen;
+                            remaining -= copyLen;
+
+                            if (copyLen === chunk.length) {
+                                buffer.shift();
+                            } else {
+                                buffer[0] = chunk.slice(copyLen);
+                            }
+                        }
+
+                        // Save chunk
+                        const filename = 'chunk_' + String(chunkIndex).padStart(6, '0') + '.part';
+                        const fileHandle = await selectedFolder.getFileHandle(filename, { create: true });
+                        const writer = await fileHandle.createWritable();
+                        await writer.write(chunkData);
+                        await writer.close();
+
+                        // Update index
+                        index.chunks[chunkIndex].downloaded = true;
+                        const indexFile2 = await selectedFolder.getFileHandle('fileindex.json', { create: true });
+                        const indexWriter2 = await indexFile2.createWritable();
+                        await indexWriter2.write(JSON.stringify(index, null, 2));
+                        await indexWriter2.close();
+
+                        downloaded += chunkData.length;
+                        chunkIndex++;
+
+                        const percent = Math.round((downloaded / totalSize) * 100);
+                        progressText.textContent = percent + '%';
+                        statusText.innerHTML = '⬇ Downloaded <span class="highlight">' + chunkIndex + '/' + totalChunks +
+                            '</span> chunks · ' + percent + '%';
+                        bufferSize = buffer.reduce((acc, chunk) => acc + chunk.length, 0);
+                    }
+                }
+
+                // Mark complete
+                index.completed = true;
+                const indexFile3 = await selectedFolder.getFileHandle('fileindex.json', { create: true });
+                const indexWriter3 = await indexFile3.createWritable();
+                await indexWriter3.write(JSON.stringify(index, null, 2));
+                await indexWriter3.close();
+
+                statusText.innerHTML = '✅ Download complete! <span class="highlight">' + totalChunks + '</span> chunks saved.';
+                progressText.textContent = '100%';
+                downloadBtn.disabled = false;
+                pauseBtn.disabled = true;
+                resumeBtn.disabled = true;
+                cancelBtn.disabled = true;
+                isDownloading = false;
+            }
+
+            function waitForResume() {
+                return new Promise((resolve) => {
+                    const checkPause = setInterval(() => {
+                        if (!isPaused) {
+                            clearInterval(checkPause);
+                            resolve();
+                        }
+                    }, 100);
+                });
+            }
+
+            // --- Pause ---
+            pauseBtn.addEventListener('click', function() {
+                if (isDownloading && !isPaused) {
+                    isPaused = true;
+                    pauseBtn.disabled = true;
+                    resumeBtn.disabled = false;
+                    statusText.innerHTML = '⏸ Paused <span class="highlight">·</span> press Resume to continue';
+                }
+            });
+
+            // --- Resume ---
+            resumeBtn.addEventListener('click', function() {
+                if (isDownloading && isPaused) {
+                    isPaused = false;
+                    resumeBtn.disabled = true;
+                    pauseBtn.disabled = false;
+                    statusText.innerHTML = '▶ Resuming...';
+                }
+            });
+
+            // --- Cancel ---
+            cancelBtn.addEventListener('click', function() {
+                if (isDownloading) {
+                    isPaused = true;
+                    isDownloading = false;
+                    pauseBtn.disabled = true;
+                    resumeBtn.disabled = true;
+                    cancelBtn.disabled = true;
+                    downloadBtn.disabled = false;
+                    statusText.innerHTML = '⛔ Download cancelled.';
+                    progressText.textContent = '';
+                }
+            });
+
+            // --- Init ---
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = true;
+            cancelBtn.disabled = true;
+
+            // Check for File System Access API support
+            if (!window.showDirectoryPicker) {
+                statusText.innerHTML = '⚠️ Your browser does not support the File System Access API. Please use Chrome or Edge.';
+                selectFolderBtn.disabled = true;
+            }
+
+        })();
+    </script>
+</body>
+</html>
