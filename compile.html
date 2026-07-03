@@ -436,7 +436,6 @@
             let indexData = null;
             let isCompiling = false;
 
-            // --- Folder Selection ---
             selectFolderBtn.addEventListener('click', async function() {
                 try {
                     if (!window.showDirectoryPicker) {
@@ -448,14 +447,12 @@
                     selectedFolder = dirHandle;
                     folderPath.value = dirHandle.name;
 
-                    // Check for fileindex.json
                     try {
                         const indexFile = await selectedFolder.getFileHandle('fileindex.json');
                         const file = await indexFile.getFile();
                         const text = await file.text();
                         indexData = JSON.parse(text);
 
-                        // Show file info
                         fileInfo.style.display = 'block';
                         const totalSizeMB = (indexData.totalSize / 1024 / 1024).toFixed(2);
                         const totalSizeGB = (indexData.totalSize / 1024 / 1024 / 1024).toFixed(2);
@@ -463,7 +460,7 @@
                             totalSizeGB + ' GB' :
                             totalSizeMB + ' MB';
 
-                        infoFileName.textContent = indexData.url.split('/').pop() || 'unknown';
+                        infoFileName.textContent = indexData.originalFilename || indexData.url.split('/').pop() || 'unknown';
                         infoTotalSize.textContent = sizeDisplay;
                         infoChunks.textContent = indexData.totalChunks + ' chunks (' +
                             (indexData.chunks.filter(c => c.downloaded).length) + ' downloaded)';
@@ -478,9 +475,9 @@
                             infoStatus.style.color = '#fbbf24';
                         }
 
-                        infoOutput.textContent = indexData.url.split('/').pop() + '.compiled';
+                        const outputName = indexData.originalFilename || indexData.url.split('/').pop() || 'output.bin';
+                        infoOutput.textContent = outputName;
 
-                        // Show chunk list
                         fileList.style.display = 'block';
                         let html = '';
                         for (let i = 0; i < indexData.chunks.length; i++) {
@@ -515,7 +512,6 @@
                 }
             });
 
-            // --- Verify ---
             verifyBtn.addEventListener('click', async function() {
                 if (!selectedFolder || !indexData) {
                     statusText.innerHTML = '⚠️ Please select a folder with fileindex.json first.';
@@ -537,6 +533,7 @@
                         const file = await fileHandle.getFile();
                         if (file.size === chunk.size) {
                             verified++;
+                            chunk.downloaded = true;
                         } else {
                             missing++;
                             chunk.downloaded = false;
@@ -549,14 +546,6 @@
                     progressText.textContent = percent + '%';
                 }
 
-                // Update index with verification results
-                indexData.chunks.forEach(c => {
-                    if (!c.downloaded) {
-                        // It might have been marked missing above
-                    }
-                });
-
-                // Re-save index
                 try {
                     const indexFile = await selectedFolder.getFileHandle('fileindex.json', { create: true });
                     const writer = await indexFile.createWritable();
@@ -573,7 +562,6 @@
                     statusText.innerHTML = '⚠️ <span class="highlight">' + missing + '</span> chunks missing or corrupt.';
                 }
 
-                // Update display
                 infoChunks.textContent = indexData.totalChunks + ' chunks (' + (indexData.chunks.filter(c => c.downloaded)
                     .length) + ' verified)';
                 const allDownloaded = indexData.chunks.every(c => c.downloaded);
@@ -588,7 +576,6 @@
                 verifyBtn.disabled = false;
             });
 
-            // --- Compile ---
             compileBtn.addEventListener('click', async function() {
                 if (!selectedFolder || !indexData) {
                     statusText.innerHTML = '⚠️ Please select a folder with fileindex.json first.';
@@ -597,7 +584,6 @@
 
                 if (isCompiling) return;
 
-                // Check all chunks are downloaded
                 const missing = indexData.chunks.filter(c => !c.downloaded);
                 if (missing.length > 0) {
                     statusText.innerHTML = '⚠️ Cannot compile: <span class="highlight">' + missing.length +
@@ -605,23 +591,20 @@
                     return;
                 }
 
-                const outputFilename = indexData.url.split('/').pop() || 'output.bin';
+                const outputFilename = indexData.originalFilename || indexData.url.split('/').pop() || 'output.bin';
 
-                // Check if output already exists
                 try {
                     await selectedFolder.getFileHandle(outputFilename);
                     const overwrite = confirm(
                         '⚠️ "' + outputFilename + '" already exists. Overwrite?'
                     );
                     if (!overwrite) return;
-                } catch (e) {
-                    // File doesn't exist, safe to continue
-                }
+                } catch (e) {}
 
                 isCompiling = true;
                 compileBtn.disabled = true;
                 verifyBtn.disabled = true;
-                statusText.innerHTML = '⬆ Compiling <span class="highlight">' + indexData.totalChunks + '</span> chunks...';
+                statusText.innerHTML = '⬆ Compiling <span class="highlight">' + indexData.totalChunks + '</span> chunks into <span class="highlight">' + outputFilename + '</span>';
                 progressText.textContent = '0%';
 
                 try {
@@ -648,14 +631,14 @@
 
                     await writer.close();
 
-                    statusText.innerHTML = 'Compilation complete! <span class="highlight">' + outputFilename +
-                        '</span> ready.';
+                    statusText.innerHTML = '✅ Compilation complete! <span class="highlight">' + outputFilename +
+                        '</span> is ready.';
                     progressText.textContent = '100%';
 
                     infoOutput.textContent = outputFilename + ' ✅';
 
                 } catch (err) {
-                    statusText.innerHTML = 'Error compiling: ' + err.message;
+                    statusText.innerHTML = '❌ Error compiling: ' + err.message;
                 } finally {
                     isCompiling = false;
                     compileBtn.disabled = false;
@@ -663,7 +646,6 @@
                 }
             });
 
-            // --- Init ---
             compileBtn.disabled = true;
             verifyBtn.disabled = true;
 
